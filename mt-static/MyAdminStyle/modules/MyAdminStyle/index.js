@@ -1,0 +1,1 @@
+export const myVars = myadminstyle_vars;
