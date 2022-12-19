@@ -57,7 +57,7 @@ sub callback_template_source_footer {
 }
 
 sub method_myadminstyle_permission_blogs {
-  my $app = @_;
+  my ($app) = @_;
   my $author_id = $app->user->id if(defined $app->user);
   my @permitted_blogs = MT->model('blog')->load(
     undef, {
