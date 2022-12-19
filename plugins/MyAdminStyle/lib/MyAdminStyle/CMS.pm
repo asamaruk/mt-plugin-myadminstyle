@@ -35,7 +35,9 @@ sub callback_template_source_header {
   };
   my $author = get_cms_model_values('author', $author_id);
   $output_myvars->{author} = get_author_values($author_id) if(defined $app->user);
-  my $flag_detail_page = grep { /^(_type||__mode||id)$/ } keys $app->param->{param};
+  
+  my $detail_param = [$app->param('_type'), $app->param('__mode'), $app->param('id')];
+  my $flag_detail_page = @{$detail_param};
   $output_myvars = get_detail_values($output_myvars, $app) if($flag_detail_page eq 3 );
   # Unique Movable Type
   $output_myvars = get_unique_movabletype_values($output_myvars, $app, $flag_detail_page) if(MT->product_name =~ 'Movable Type');

@@ -65,7 +65,7 @@ sub get_detail_values {
       my $output_name_primary = $type eq 'entry'?'primary_category':'primary_folder';
       my $output_name = $type eq 'entry'?'categories':'folders';
       my $categories = $detail_data->categories;
-      if($categories){
+      if(@{$categories}){
         foreach (@{$categories}) {
           push @{$result->{$type}{$output_name}}, $_->{column_values};
           $result->{$type}{$output_name_primary} = $detail_data->category->{column_values}||'';
