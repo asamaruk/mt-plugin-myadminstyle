@@ -29,17 +29,25 @@ MT->add_plugin($plugin);
 
 sub init_registry {
   my ($plugin) = @_;
+  my $pkg = '$MyAdminStyle::MyAdminStyle::';
   $plugin->registry({
     callbacks => {
       'MT::App::CMS::template_source.header' => {
-        handler  => '$MyAdminStyle::MyAdminStyle::Callbacks::template_source_header',
+        handler  => "${pkg}CMS::callback_template_source_header",
         priority => 11,
       },
       'MT::App::CMS::template_source.footer' => {
-        handler  => '$MyAdminStyle::MyAdminStyle::Callbacks::template_source_footer',
+        handler  => "${pkg}CMS::callback_template_source_footer",
         priority => 11,
       },
     },
+    applications => {
+      cms => {
+        methods => {
+          my_permission_blogs => "${pkg}CMS::method_myadminstyle_permission_blogs",
+        }
+      }
+    }
   });
 }
 
