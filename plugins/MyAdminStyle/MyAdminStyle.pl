@@ -21,7 +21,7 @@ my $plugin = MT::Plugin::MyAdminStyle->new({
     ['head_close', {Default => ''}],
     ['body_close', {Default => ''}],
   ]),
-  version => '0.0.1',
+  version => '0.0.3',
   schema_version => '0.0.1',
   l10n_class => 'MyAdminStyle::L10N',
 });

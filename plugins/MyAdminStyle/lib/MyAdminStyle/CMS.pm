@@ -3,10 +3,12 @@ package MyAdminStyle::CMS;
 use strict;
 use warnings;
 use MyAdminStyle::Util;
+use MyAdminStyle::MovableType;
+use MyAdminStyle::PowerCMS;
 
 sub callback_template_source_header {
   my ($cb, $app, $tmpl_ref, $fname) = @_;
-  my $author_id = $app->user->id if(defined $app->user);
+  my $author_id = $app->user->id if (defined $app->user);
   my $blog_id   = $app->param('blog_id');
 
   my $plugin = plugin();
@@ -28,21 +30,29 @@ sub callback_template_source_header {
     id => $app->param('id') || "0",
     mode => $app->param('__mode') || '',
     object_type => '<mt:Var name=object_type>',
-    # requests => $app->param->{param},
     scope_type => '<mt:Var name=scope_type>',
     screen_id => '<mt:Var name=class-myadminstyle__plugin--screen_id__render>',
     type => $app->param('_type') || $app->param('datasource') || '',
   };
-  my $author = get_cms_model_values('author', $author_id);
-  $output_myvars->{author} = get_author_values($author_id) if(defined $app->user);
-  
-  my $detail_param = [$app->param('_type'), $app->param('__mode'), $app->param('id')];
-  my $flag_detail_page = @{$detail_param};
-  $output_myvars = get_detail_values($output_myvars, $app) if($flag_detail_page eq 3 );
-  # Unique Movable Type
-  $output_myvars = get_unique_movabletype_values($output_myvars, $app, $flag_detail_page) if(MT->product_name =~ 'Movable Type');
-  # Unique PowerCMS
-  # $output_myvars = get_unique_powercms_values() if(MT->product_name =~ 'PowerCMS');
+  $output_myvars->{author} = get_author_values($author_id) if (defined $app->user);
+  $output_myvars = get_movabletype_mycms($output_myvars) if (MT->product_name =~ 'Movable Type');
+
+  if (match_detail($app, 'entry_and_page')){
+    $output_myvars = get_detail_values($app, $output_myvars) if ($app->param('id'));
+    $output_myvars = get_detail_custom_fields_values($app, $output_myvars);
+  }
+  if (match_detail($app, 'content_data')){
+    my ($content_type_id) = ($app->param('type') || '') =~ /^content_data_([0-9]+)$/;
+    $content_type_id ||= $app->param('content_type_id');
+    $content_type_id ||= "0";
+    $output_myvars->{content_type_id} = $content_type_id || "0";
+    $output_myvars = get_detail_contents_data_values($app, $content_type_id, $output_myvars) if ($app->param('id'));
+    $output_myvars = get_detail_contents_field_values($app, $content_type_id, $output_myvars);
+  }
+  if (match_detail($app, 'custom_object')){
+    $output_myvars = get_detail_custom_object_values($app, $output_myvars) if ($app->param('id'));
+    $output_myvars = get_detail_custom_object_custom_fields_values($app, $output_myvars);
+  }
 
   my $insert_code = insert_code_in_header(
     JSON::to_json($output_myvars),
@@ -60,7 +70,7 @@ sub callback_template_source_footer {
 
 sub method_myadminstyle_permission_blogs {
   my ($app) = @_;
-  my $author_id = $app->user->id if(defined $app->user);
+  my $author_id = $app->user->id if (defined $app->user);
   my @permitted_blogs = MT->model('blog')->load(
     undef, {
       'join' => ['MT::Permission', 'blog_id', {author_id => $author_id}],
@@ -69,7 +79,7 @@ sub method_myadminstyle_permission_blogs {
   );
   my $result= {};
   foreach (@permitted_blogs) {
-    if(!$_->parent_id){
+    if (!$_->parent_id){
       $result = {%{$result}, $_->id => get_cms_model_values('blog', $_->id)};
       $result->{$_->id}{children} = {};
     }else{

@@ -7,16 +7,51 @@ use base 'Exporter';
 
 our @EXPORT = qw(
   plugin
+  match_detail
+  get_model_label
   get_plugin_config_values
   get_cms_model_values
   get_author_values
   get_detail_values
-  get_unique_movabletype_values
+  get_detail_custom_fields_values
   insert_code_in_header
 );
 
 sub plugin {
   MT->instance->component('MyAdminStyle');
+}
+
+sub match_detail {
+  my ($app, $word) = @_;
+  my $type = $app->param('_type');
+  my $mode = $app->param('__mode');
+  my $id   = $app->param('id');
+  my $result = 0;
+  if (
+    $word eq 'entry_and_page' && 
+    $mode eq 'view' && $type eq 'entry' || $type eq 'page'){
+    $result = 1;
+  }
+  if (
+    $word eq 'content_data' && MT->product_name =~ 'Movable Type' && 
+    $mode eq 'view' && $type eq 'content_data'){
+    $result = 1;
+  }
+  if (
+    $word eq 'custom_object' && MT->product_name =~ 'PowerCMS' && 
+    $mode eq 'view' && $type eq 'customobject'){
+    $result = 1;
+  }
+  return $result;
+}
+
+sub get_model_label {
+  my ($type) = @_;
+  my $model = MT->registry('object_types');
+  my ($grep, $match) = [];
+  @{$grep}  = grep { m/^\Q$type\E\.?/ } keys %$model;
+  @{$match} = grep { $_ eq $type } @{$grep};
+  return $match->[0];
 }
 
 sub get_plugin_config_values {
@@ -29,12 +64,12 @@ sub get_plugin_config_values {
 
 sub get_cms_model_values {
   my ($model_label, $load_id) = @_;
-  return '' if($load_id eq '0');
+  return '' if ($load_id eq '0');
   my $result;
   my $model = MT->model($model_label)->load({id => $load_id});
-  my $customfields = get_meta($model);
+  my $custom_fields = get_meta($model); #basename
   $result = $model->{column_values};
-  $result->{customfields} = $customfields;
+  $result->{custom_field_values} = $custom_fields;
   return $result;
 }
 
@@ -52,57 +87,37 @@ sub get_author_values {
 }
 
 sub get_detail_values {
-  my ($output_myvars, $app) = @_;
+  my ($app, $result) = @_;
   my $type = $app->param('_type');
-  my $result = $output_myvars;
-  my $model = MT->registry('object_types');
-  my ($grep, $match) = [];
-  @{$grep}  = grep { m/^\Q$type\E\.?/ } keys %$model;
-  @{$match} = grep { $_ eq $type } @{$grep};
-  my $detail_data = MT->model($match->[0])->load($app->param('id'));
-  if($detail_data) {
-    if($type eq 'entry' || $type eq 'page') {
-      my $output_name_primary = $type eq 'entry'?'primary_category':'primary_folder';
-      my $output_name = $type eq 'entry'?'categories':'folders';
-      my $categories = $detail_data->categories;
-      if(@{$categories}){
-        foreach (@{$categories}) {
-          push @{$result->{$type}{$output_name}}, $_->{column_values};
-          $result->{$type}{$output_name_primary} = $detail_data->category->{column_values}||'';
-        }
+  my $detail_data = MT->model(get_model_label($type))->load($app->param('id'));
+  if ($detail_data) {
+    my $output_name_primary = $type eq 'entry'?'primary_category':'primary_folder';
+    my $output_name = $type eq 'entry'?'categories':'folders';
+    my $categories = $detail_data->categories;
+    if (@{$categories}){
+      $result->{$type}{$output_name_primary} = $detail_data->category->{column_values}||'';
+      foreach my $category (@{$categories}) {
+        @{$result->{$type}{$output_name}} = $category->{column_values};
       }
-      $result->{$type} = get_cms_model_values('entry', $app->param('id'));
     }
+    $result->{$type} = get_cms_model_values($type, $app->param('id'));
     $result->{$type} = $detail_data->{column_values};
   }
   return $result;
 }
 
-sub get_unique_movabletype_values {
-  my ($output_myvars, $app, $flag_detail) = @_;
-  my $result = $output_myvars;
+sub get_detail_custom_fields_values {
+  my ($app, $result) = @_;
   my $type = $app->param('_type');
-  my ($content_type_id) = ($app->param('type') || '') =~ /^content_data_([0-9]+)$/;
-  $content_type_id ||= $app->param('content_type_id');
-  $content_type_id ||= "0";
-
-  if($flag_detail eq 3 && $type eq 'content_data' && $content_type_id) {
-    my $field = [];
-    @{$field} = MT->model('content_field')->load({content_type_id => $content_type_id});
-    $result->{$type}{content_fields} = [];
-    foreach (@{$field}) {
-      $_->{column_values}{html_wrap_id} = 'contentField'.$_->{column_values}{id};
-      $_->{column_values}{html_field_id} = 'content-field-'.$_->{column_values}{id};
-      push @{$result->{$type}{content_fields}}, $_->{column_values};
-    }
+  my $custom_fields = [];
+  @{$custom_fields} = MT->model('field')->load({obj_type => get_model_label($type), blog_id => $app->param('blog_id')});
+  $result->{$type}{custom_fields} = [];
+  foreach my $custom_field (@{$custom_fields}) {
+    $custom_field->{column_values}{html_wrap_id} = 'customfield_'.$custom_field->{column_values}{basename}.'-field';
+    $custom_field->{column_values}{html_field_id} = 'customfield_'.$custom_field->{column_values}{basename};
+    push @{$result->{$type}{custom_fields}}, $custom_field->{column_values};
   }
-  $result->{cms}{release_version} = MT->release_version_id if(MT->version_number >= 7);
-  $result->{content_type_id} = $content_type_id || "0";
   return $result;
-}
-
-sub get_unique_powercms_values {
-  return 1;
 }
 
 sub insert_code_in_header {
