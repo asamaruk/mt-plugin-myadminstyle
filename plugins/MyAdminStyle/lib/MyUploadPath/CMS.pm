@@ -19,10 +19,10 @@ sub callback_template_param_edit_field {
   my $new_element = $tmpl->createElement('app:setting');
   $new_element->setAttribute('id', 'my_upload_path');
   $new_element->setAttribute('label', $app->translate('Upload Destination'));
-  my $description = $app->translate('Custom Path Description');
+  my $description = $app->translate('My Upload Path Description');
   my $inner_html = <<EOS;
-  <input type="text" name="my_upload_path" value="${my_upload_path}" id="my_upload_path" class="form-control text">
-  <small id="basenameHelp" class="form-text text-muted last-child">${description}</small>
+  <input type="text" name="my_upload_path" value="${my_upload_path}" id="my_upload_path" class="form-control text" placeholder="myuploadpath">
+  <div class="hint"><small id="basenameHelp" class="form-text text-muted last-child">${description}</small></div>
 EOS
   $new_element->innerHTML($inner_html);
   $tmpl->insertAfter($new_element, $host_element);
@@ -30,12 +30,11 @@ EOS
 
 sub callback_template_output_asset_upload {
   my ($cb, $app, $output, $param, $tmpl) = @_;
-  require MT::PluginData;
-  my $plugins = MT->config->PluginSwitch || {};
+  my $plugins = MT->config->pluginschemaversion;
   my $nofollow_switch = $plugins->{'UploadDir/mt-uploaddir.pl'};
 
   # UploadDir M-Logic, Inc.
-  if ($nofollow_switch eq '1'){
+  if ($nofollow_switch){
     my $old_element = quotemeta('fd.append(\'extra_path\', dn );');
     my $new_element = 'fd.append(\'extra_path\', jQuery(\'#extra_path\').val() + \'/\' + dn);';
     $$output =~ s!($old_element)!$new_element!;

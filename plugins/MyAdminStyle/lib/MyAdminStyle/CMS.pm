@@ -54,6 +54,7 @@ sub callback_template_source_header {
     $output_myvars = get_detail_custom_object_custom_fields_values($app, $output_myvars);
   }
 
+  require JSON;
   my $insert_code = insert_code_in_header(
     JSON::to_json($output_myvars),
     get_plugin_config_values('head_close', $blog_id)
