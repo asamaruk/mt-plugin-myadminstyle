@@ -1,5 +1,5 @@
-import {myVars} from '../modules/MyAdminStyle/index.js';
-import {myHelloWorld} from '../modules/HelloWorld/index.js';
+import {myVars} from '../modules/MyAdminStyle/app.js';
+import {myHelloWorld} from '../modules/HelloWorld/app.js';
 
 console.log(myVars);
 myHelloWorld();
