@@ -20,10 +20,9 @@ sub callback_template_param_edit_field {
   $new_element->setAttribute('id', 'my_upload_path');
   $new_element->setAttribute('label', $app->translate('Upload Destination'));
   my $description = $app->translate('My Upload Path Description');
-  my $inner_html = <<EOS;
-  <input type="text" name="my_upload_path" value="${my_upload_path}" id="my_upload_path" class="form-control text" placeholder="myuploadpath">
-  <div class="hint"><small id="basenameHelp" class="form-text text-muted last-child">${description}</small></div>
-EOS
+  my $inner_html = "<input type=\"text\" name=\"my_upload_path\" value=\"${my_upload_path}\" id=\"my_upload_path\" class=\"form-control text\" placeholder=\"myuploadpath\">";
+  $inner_html .= "<small id=\"basenameHelp\" class=\"form-text text-muted last-child\" style=\"display:${description};\">${description}</small>" if (MT->product_name =~ 'Movable Type');
+  $inner_html .= "<div class=\"hint\" style=\"display:${description};\">${description}</div>" if (MT->product_name =~ 'PowerCMS');
   $new_element->innerHTML($inner_html);
   $tmpl->insertAfter($new_element, $host_element);
 }

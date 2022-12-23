@@ -28,19 +28,19 @@ sub match_detail {
   my $id   = $app->param('id');
   my $result = 0;
   if (
-    $word eq 'entry_and_page' && 
+    $word eq 'entry_and_page' &&
     $mode eq 'view' && $type eq 'entry' || $type eq 'page'){
     $result = 1;
   }
   if (
-    $word eq 'content_data' && MT->product_name =~ 'Movable Type' && 
+    $word eq 'content_data' && MT->product_name =~ 'Movable Type' &&
     $mode eq 'view' && $type eq 'content_data'){
     $result = 1;
   }
-  if (
-    $word eq 'custom_object' && MT->product_name =~ 'PowerCMS' && 
-    $mode eq 'view' && $type eq 'customobject'){
-    $result = 1;
+  if ($word eq 'custom_object' && MT->product_name =~ 'PowerCMS' && $mode eq 'view'){
+    my $custom_objects =  MT->instance->registry('custom_objects');
+    my $grep = grep { m/^\Q$type\E\.?/ } keys( %$custom_objects );
+    $result = 1 if ($grep);
   }
   return $result;
 }
