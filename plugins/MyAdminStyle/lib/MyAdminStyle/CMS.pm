@@ -26,12 +26,12 @@ sub callback_template_source_header {
     },
     author_id => $author_id,
     blog_id => '<mt:BlogID>',
-    html_title => '<mt:Var name=class-myadminstyle__plugin--html_title__render>',
+    html_title => '<mt:Var name=class-myadminstyle__plugin--html_title__output>',
     id => $app->param('id') || "0",
     mode => $app->param('__mode') || '',
     object_type => '<mt:Var name=object_type>',
     scope_type => '<mt:Var name=scope_type>',
-    screen_id => '<mt:Var name=class-myadminstyle__plugin--screen_id__render>',
+    screen_id => '<mt:Var name=class-myadminstyle__plugin--screen_id__output>',
     type => $app->param('_type') || $app->param('datasource') || '',
   };
   $output_myvars->{author} = get_author_values($author_id) if (defined $app->user);

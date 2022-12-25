@@ -131,10 +131,10 @@ sub insert_code_in_header {
           <mt:SetVarBlock name="screen_id" append="1"><mt:Var name="object_type"></mt:SetVarBlock>
         </mt:if>
       </mt:Unless>
-      <mt:SetVarTemplate name="class-myadminstyle__plugin--screen_id__render" note="Output"><mt:Var name="screen_id" escape="html"></mt:SetVarTemplate>
+      <mt:SetVarTemplate name="class-myadminstyle__plugin--screen_id__output" note="Output"><mt:Var name="screen_id" escape="html"></mt:SetVarTemplate>
     </mt:SetVarTemplate>
     <mt:SetVarTemplate name="class-myadminstyle__plugin--html_title" note="Create JSON html_title value">
-      <mt:SetVarTemplate name="class-myadminstyle__plugin--html_title__render" note="Output"><mt:if name="html_title"><mt:var name="html_title" escape="html"><mt:else><mt:var name="page_title" escape="html"></mt:if></mt:SetVarTemplate>
+      <mt:SetVarTemplate name="class-myadminstyle__plugin--html_title__output" note="Output"><mt:if name="html_title"><mt:var name="html_title" escape="html"><mt:else><mt:var name="page_title" escape="html"></mt:if></mt:SetVarTemplate>
     </mt:SetVarTemplate>
   </mt:SetVarTemplate>
 
