@@ -62,7 +62,7 @@ sub init_registry {
     applications => {
       cms => {
         methods => {
-          my_permission_blogs => "${pkg}CMS::method_myadminstyle_permission_blogs",
+          my_permission_blogs => "${pkg}::MyAdminStyle::CMS::method_myadminstyle_permission_blogs",
         }
       }
     },
