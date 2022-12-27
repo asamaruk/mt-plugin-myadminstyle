@@ -30,7 +30,7 @@
 0.0.4
 
 ## License
-Released under the [MIT license](https://opensource.org/licenses/mit-license.php)
+GNU General Public License version 2
 
 ## Author
 [CMS NOTE](https://cms-note.com/)
